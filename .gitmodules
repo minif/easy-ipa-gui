@@ -1,0 +1,4 @@
+[submodule "ipatoolpy"]
+	path = ipatoolpy
+	url = https://github.com/minif/ipatool-py-scrape.git
+	branch = gui-submodule
