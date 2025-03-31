@@ -221,6 +221,7 @@ class EasyIPAGUI:
         filesize_estimate = 0
         filesize_estimate_low = 0
         app_count = 0
+        fail_count=0
         logger.info("Preparing download queue.")
         list_count = 0
         self.download_cancel_state = False
@@ -230,20 +231,25 @@ class EasyIPAGUI:
                 option=item["selection"].curselection()[0]
                 if option!=0:
                     logger.info("Trying appid %s"%item["id"])
-                    evids, size, fullsize = self.get_app_evids(item["id"],return_all=option==2)
-                    i=0
-                    for evid in evids:
-                        app_vrs = {}
-                        app_vrs["id"] = item["id"]
-                        app_vrs["evid"] = evid
-                        self.versionlist.append(app_vrs)
-                        app_count+=1
-                        #My very scientifically proven method backed by multiple sources to estimate file size
-                        filesize_estimate+=size
-                        filesize_estimate_low+=size*(100/(100+i))
-                        self.download_label["text"]="Preparing to download... %s of %s (%s versions)"%(list_count,len(self.applist),app_count)
-                        self.download_estimte_label["text"]="App Size Estimate: %.3fGB - %.3fGB" % (filesize_estimate_low/1000000000,filesize_estimate/1000000000)
-                        i+=1
+                    try:
+                        evids, size, fullsize = self.get_app_evids(item["id"],return_all=option==2)
+                        i=0
+                        for evid in evids:
+                            app_vrs = {}
+                            app_vrs["id"] = item["id"]
+                            app_vrs["evid"] = evid
+                            self.versionlist.append(app_vrs)
+                            app_count+=1
+                            #My very scientifically proven method backed by multiple sources to estimate file size
+                            filesize_estimate+=size
+                            filesize_estimate_low+=size*(100/(100+i))
+                            self.download_label["text"]="Preparing to download... %s of %s (%s versions)(%s failures), "%(list_count,len(self.applist),app_count,fail_count)
+                            self.download_estimte_label["text"]="App Size Estimate: %.3fGB - %.3fGB" % (filesize_estimate_low/1000000000,filesize_estimate/1000000000)
+                            i+=1
+                    except Exception as e: 
+                        fail_count+=1
+                        logger.info("Failed to get appid %s"%item["id"])
+                        self.download_label["text"]="Preparing to download... %s of %s (%s versions)(%s failures), "%(list_count,len(self.applist),app_count,fail_count)
                     
             if self.download_cancel_state:
                 self.download.withdraw()
